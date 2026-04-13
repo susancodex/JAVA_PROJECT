@@ -25,3 +25,26 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+
+## Student Management System (Java Swing)
+
+A standalone Java Swing desktop application located in `student-management-system/`.
+
+### Stack
+- **Language**: Java (GraalVM 22.3)
+- **GUI**: Java Swing
+- **Database**: SQLite (via JDBC + sqlite-jdbc.jar)
+- **Architecture**: MVC-like pattern (Student model, StudentService DAO, StudentManagementUI view)
+
+### Files
+- `Main.java` — Entry point
+- `Student.java` — Model/POJO class
+- `DatabaseConnection.java` — JDBC SQLite connection
+- `StudentService.java` — CRUD + filter/sort operations
+- `StudentManagementUI.java` — Swing GUI with 5 event listener types
+
+### Commands (run from `student-management-system/` directory)
+```
+javac -cp .:sqlite-jdbc.jar *.java
+java -cp .:sqlite-jdbc.jar Main
+```
