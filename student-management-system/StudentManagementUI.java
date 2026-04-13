@@ -104,6 +104,7 @@ public class StudentManagementUI extends JFrame {
         formPanel.add(new JLabel("Name:"), gbc);
         gbc.gridx = 1;
         nameField = new JTextField(15);
+        addPlaceholder(nameField, "e.g. Rahul Sharma");
         formPanel.add(nameField, gbc);
 
         // Roll Number field
@@ -111,6 +112,7 @@ public class StudentManagementUI extends JFrame {
         formPanel.add(new JLabel("Roll Number:"), gbc);
         gbc.gridx = 1;
         rollNumberField = new JTextField(15);
+        addPlaceholder(rollNumberField, "e.g. 101");
         formPanel.add(rollNumberField, gbc);
 
         // Department dropdown
@@ -146,6 +148,7 @@ public class StudentManagementUI extends JFrame {
         formPanel.add(new JLabel("Email:"), gbc);
         gbc.gridx = 1;
         emailField = new JTextField(15);
+        addPlaceholder(emailField, "e.g. rahul@college.edu");
         formPanel.add(emailField, gbc);
 
         // ===== Buttons Panel =====
@@ -180,7 +183,30 @@ public class StudentManagementUI extends JFrame {
         formPanel.add(new JLabel("Search by Name (type to search):"), gbc);
         gbc.gridy = 7;
         searchField = new JTextField(15);
+        addPlaceholder(searchField, "Type name to search...");
         formPanel.add(searchField, gbc);
+
+        // ===== CRUD Instructions Guide =====
+        // Shows the user exactly how to perform each CRUD operation
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 5, 5, 5);
+        JTextArea crudGuide = new JTextArea(
+                "-- HOW TO USE --\n" +
+                "CREATE : Fill form → Add Student\n" +
+                "READ   : Records appear in the table\n" +
+                "UPDATE : Click row → Edit → Update\n" +
+                "DELETE : Click row → Delete Student"
+        );
+        crudGuide.setEditable(false);
+        crudGuide.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        crudGuide.setBackground(new Color(236, 240, 241));
+        crudGuide.setForeground(new Color(44, 62, 80));
+        crudGuide.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(189, 195, 199)),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        formPanel.add(crudGuide, gbc);
 
         // ===== EVENT 3: KeyListener =====
         // Triggered when the user types in the search field
@@ -355,11 +381,11 @@ public class StudentManagementUI extends JFrame {
 
         // Create a new Student object from form data
         Student student = new Student(
-                nameField.getText().trim(),
-                Integer.parseInt(rollNumberField.getText().trim()),
+                getRealText(nameField),
+                Integer.parseInt(getRealText(rollNumberField)),
                 departmentCombo.getSelectedItem().toString(),
                 Integer.parseInt(semesterCombo.getSelectedItem().toString()),
-                emailField.getText().trim()
+                getRealText(emailField)
         );
 
         // Call the service to add the student
@@ -388,11 +414,11 @@ public class StudentManagementUI extends JFrame {
         // Create updated Student object
         Student student = new Student(
                 selectedStudentId,
-                nameField.getText().trim(),
-                Integer.parseInt(rollNumberField.getText().trim()),
+                getRealText(nameField),
+                Integer.parseInt(getRealText(rollNumberField)),
                 departmentCombo.getSelectedItem().toString(),
                 Integer.parseInt(semesterCombo.getSelectedItem().toString()),
-                emailField.getText().trim()
+                getRealText(emailField)
         );
 
         // Call the service to update
@@ -437,9 +463,9 @@ public class StudentManagementUI extends JFrame {
 
     // Validate form input fields
     private boolean validateInput() {
-        String name = nameField.getText().trim();
-        String rollStr = rollNumberField.getText().trim();
-        String email = emailField.getText().trim();
+        String name = getRealText(nameField);
+        String rollStr = getRealText(rollNumberField);
+        String email = getRealText(emailField);
 
         // Check for empty fields
         if (name.isEmpty() || rollStr.isEmpty() || email.isEmpty()) {
@@ -467,15 +493,22 @@ public class StudentManagementUI extends JFrame {
         return true;
     }
 
-    // Clear all form fields and reset selection
+    // Clear all form fields and reset selection (also restores placeholder hints)
     private void clearForm() {
-        nameField.setText("");
-        rollNumberField.setText("");
-        emailField.setText("");
+        restorePlaceholder(nameField, "e.g. Rahul Sharma");
+        restorePlaceholder(rollNumberField, "e.g. 101");
+        restorePlaceholder(emailField, "e.g. rahul@college.edu");
+        restorePlaceholder(searchField, "Type name to search...");
         departmentCombo.setSelectedIndex(0);
         semesterCombo.setSelectedIndex(0);
         selectedStudentId = -1; // Reset selected student
         studentTable.clearSelection(); // Deselect table row
+    }
+
+    // Directly restore placeholder text and gray color to a field
+    private void restorePlaceholder(JTextField field, String hint) {
+        field.setText(hint);
+        field.setForeground(Color.GRAY);
     }
 
     // Load all students from database into the table
@@ -498,6 +531,40 @@ public class StudentManagementUI extends JFrame {
             };
             tableModel.addRow(row); // Add each student as a row
         }
+    }
+
+    // ===== Placeholder Helper Method =====
+    // Adds gray hint text inside a JTextField that disappears when the user clicks on it
+    // Uses FocusListener to detect when the field is focused/unfocused
+    private void addPlaceholder(JTextField field, String hint) {
+        field.setText(hint);
+        field.setForeground(Color.GRAY); // Show hint in gray
+
+        field.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                // When user clicks the field, clear the hint text
+                if (field.getForeground().equals(Color.GRAY)) {
+                    field.setText("");
+                    field.setForeground(Color.BLACK); // Restore normal text color
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                // If the user left the field empty, show the hint again
+                if (field.getText().isEmpty()) {
+                    field.setText(hint);
+                    field.setForeground(Color.GRAY);
+                }
+            }
+        });
+    }
+
+    // Helper to get real text from a field (ignores placeholder hint text)
+    private String getRealText(JTextField field) {
+        if (field.getForeground().equals(Color.GRAY)) return ""; // Placeholder = empty
+        return field.getText().trim();
     }
 
     // Filter the table by name (real-time search)
