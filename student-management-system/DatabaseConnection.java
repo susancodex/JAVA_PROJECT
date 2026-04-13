@@ -16,6 +16,13 @@ public class DatabaseConnection {
     // Method to get a connection to the SQLite database
     // Returns a Connection object that can be used to execute SQL queries
     public static Connection getConnection() throws SQLException {
+        try {
+            // Explicitly load the SQLite JDBC driver class
+            // This is required so Java knows which driver to use for "jdbc:sqlite:" URLs
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("SQLite JDBC driver not found. Make sure sqlite-jdbc.jar is in the classpath.", e);
+        }
         return DriverManager.getConnection(DB_URL);
     }
 
